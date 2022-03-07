@@ -9,7 +9,6 @@ describe('makeStyles', () => {
   });
 
   it('throws inside React components', () => {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     jest.spyOn(console, 'error').mockImplementation(() => {});
 
     const Example: React.FC = () => {

@@ -7,7 +7,6 @@ import { useTextDirection } from './TextDirectionContext';
 
 function isInsideComponent() {
   try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     React.useContext({} as unknown as React.Context<unknown>);
     return true;
   } catch (e) {

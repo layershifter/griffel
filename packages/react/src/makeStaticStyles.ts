@@ -7,7 +7,6 @@ export function makeStaticStyles(styles: GriffelStaticStyles | GriffelStaticStyl
   const getStyles = vanillaMakeStaticStyles(styles);
 
   if (process.env.NODE_ENV === 'test') {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     return () => {};
   }
 
