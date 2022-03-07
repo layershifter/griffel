@@ -1,0 +1,7 @@
+{
+  "type": "patch",
+  "comment": "test: add test for typings based with different TS versions (#57)",
+  "packageName": "@griffel/babel-preset",
+  "email": "olfedias@microsoft.com",
+  "dependentChangeType": "patch"
+}
