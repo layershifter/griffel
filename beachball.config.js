@@ -49,14 +49,4 @@ module.exports = {
   registry: 'http://localhost:4873/',
   access: 'public',
   branch: 'origin/test-publish',
-  hooks: {
-    async postbump() {
-      if (!completedPostBump) {
-        await sh('yarn');
-        await sh('yarn prepublish');
-
-        completedPostBump = true;
-      }
-    },
-  },
 };
