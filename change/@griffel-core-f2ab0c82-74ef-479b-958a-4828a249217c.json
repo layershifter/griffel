@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "test change",
-  "packageName": "@griffel/core",
-  "email": "olfedias@microsoft.com",
-  "dependentChangeType": "patch"
-}

@@ -38,7 +38,7 @@ function sh(command) {
   });
 }
 
-let completedPrepublish = false;
+let completedPostBump = false;
 
 /**
  * @type {import('beachball').BeachballConfig}
@@ -50,12 +50,12 @@ module.exports = {
   access: 'public',
   branch: 'origin/test-publish',
   hooks: {
-    async prepublish() {
-      if (!completedPrepublish) {
+    async postbump() {
+      if (!completedPostBump) {
         await sh('yarn');
         await sh('yarn prepublish');
 
-        completedPrepublish = true;
+        completedPostBump = true;
       }
     },
   },

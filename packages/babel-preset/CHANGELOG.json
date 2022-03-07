@@ -2,6 +2,27 @@
   "name": "@griffel/babel-preset",
   "entries": [
     {
+      "date": "Mon, 07 Mar 2022 16:20:24 GMT",
+      "tag": "@griffel/babel-preset_v1.1.1",
+      "version": "1.1.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "olfedias@microsoft.com",
+            "package": "@griffel/babel-preset",
+            "commit": "1b8e5795f6b0e3674d8da9b35376088e47632a8a",
+            "comment": "test change"
+          },
+          {
+            "author": "beachball",
+            "package": "@griffel/babel-preset",
+            "comment": "Bump @griffel/core to v1.1.1",
+            "commit": "f26b29fdc17d2588ea76c95b13f641ac53fb6933"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 07 Mar 2022 09:08:07 GMT",
       "tag": "@griffel/babel-preset_v1.1.0",
       "version": "1.1.0",

@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "test change",
-  "packageName": "@griffel/jest-serializer",
-  "email": "olfedias@microsoft.com",
-  "dependentChangeType": "patch"
-}
