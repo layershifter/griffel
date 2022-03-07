@@ -2904,7 +2904,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@griffel/babel-preset@^1.1.0, @griffel/babel-preset@workspace:packages/babel-preset":
+"@griffel/babel-preset@^1.1.2, @griffel/babel-preset@workspace:packages/babel-preset":
   version: 0.0.0-use.local
   resolution: "@griffel/babel-preset@workspace:packages/babel-preset"
   dependencies:
@@ -2918,11 +2918,11 @@ __metadata:
     ajv: ^8.4.0
     tslib: ^2.1.0
   peerDependencies:
-    "@griffel/core": ^1.1.0
+    "@griffel/core": ^1.1.2
   languageName: unknown
   linkType: soft
 
-"@griffel/core@^1.1.0, @griffel/core@workspace:packages/core":
+"@griffel/core@^1.1.2, @griffel/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@griffel/core@workspace:packages/core"
   dependencies:
@@ -2940,7 +2940,7 @@ __metadata:
   dependencies:
     tslib: ^2.1.0
   peerDependencies:
-    "@griffel/core": ^1.1.0
+    "@griffel/core": ^1.1.2
   languageName: unknown
   linkType: soft
 
@@ -2948,7 +2948,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@griffel/react@workspace:packages/react"
   dependencies:
-    "@griffel/core": ^1.1.0
+    "@griffel/core": ^1.1.2
     tslib: ^2.1.0
   peerDependencies:
     react: ">=16.8.0 <18.0.0"
@@ -2960,14 +2960,14 @@ __metadata:
   resolution: "@griffel/webpack-loader@workspace:packages/webpack-loader"
   dependencies:
     "@babel/core": ^7.12.13
-    "@griffel/babel-preset": ^1.1.0
+    "@griffel/babel-preset": ^1.1.2
     "@linaria/babel-preset": ^3.0.0-beta.14
     enhanced-resolve: ^5.8.2
     loader-utils: ^2.0.0
     schema-utils: ^3.1.1
     tslib: ^2.1.0
   peerDependencies:
-    "@griffel/react": ^1.0.1
+    "@griffel/react": ^1.0.3
     webpack: ^5
   languageName: unknown
   linkType: soft

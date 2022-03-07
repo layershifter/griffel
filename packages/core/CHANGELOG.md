@@ -1,8 +1,16 @@
 # Change Log - @griffel/core
 
-This log was last generated on Mon, 07 Mar 2022 16:20:24 GMT and should not be manually modified.
+This log was last generated on Mon, 07 Mar 2022 16:21:48 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 1.1.2
+
+Mon, 07 Mar 2022 16:21:48 GMT
+
+### Patches
+
+- test change (olfedias@microsoft.com)
 
 ## 1.1.1
 
