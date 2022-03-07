@@ -1,7 +1,0 @@
-{
-  "type": "major",
-  "comment": "test",
-  "packageName": "@griffel/core",
-  "email": "olfedias@microsoft.com",
-  "dependentChangeType": "major"
-}
