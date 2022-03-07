@@ -17,6 +17,7 @@
     "build": "nx affected:build",
     "change": "beachball change",
     "lint": "nx affected:lint",
+    "prepublish": "yarn build",
     "start": "nx run @griffel/website:serve",
     "storybook": "nx run @griffel/react:storybook",
     "test": "nx affected:test",
