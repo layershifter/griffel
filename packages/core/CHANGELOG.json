@@ -2,6 +2,66 @@
   "name": "@griffel/core",
   "entries": [
     {
+      "date": "Mon, 07 Mar 2022 16:55:43 GMT",
+      "tag": "@griffel/core_v2.0.1",
+      "version": "2.0.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "olfedias@microsoft.com",
+            "package": "@griffel/core",
+            "commit": "c786dcd6394195011eaad035f09b89f55ad01346",
+            "comment": "test"
+          }
+        ]
+      }
+    },
+    {
+      "date": "Mon, 07 Mar 2022 16:27:42 GMT",
+      "tag": "@griffel/core_v2.0.0",
+      "version": "2.0.0",
+      "comments": {
+        "major": [
+          {
+            "author": "olfedias@microsoft.com",
+            "package": "@griffel/core",
+            "commit": "43e1cc014ef20d86f56f6af61b0d48eb213f6cce",
+            "comment": "test"
+          }
+        ]
+      }
+    },
+    {
+      "date": "Mon, 07 Mar 2022 16:21:48 GMT",
+      "tag": "@griffel/core_v1.1.2",
+      "version": "1.1.2",
+      "comments": {
+        "patch": [
+          {
+            "author": "olfedias@microsoft.com",
+            "package": "@griffel/core",
+            "commit": "fd66ce6504c7375f88a2d6bf7e9cc5df405b189e",
+            "comment": "test change"
+          }
+        ]
+      }
+    },
+    {
+      "date": "Mon, 07 Mar 2022 16:20:24 GMT",
+      "tag": "@griffel/core_v1.1.1",
+      "version": "1.1.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "olfedias@microsoft.com",
+            "package": "@griffel/core",
+            "commit": "7ba2a2d010383f0691660eb333f76db5774f5e39",
+            "comment": "test change"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 07 Mar 2022 09:08:07 GMT",
       "tag": "@griffel/core_v1.1.0",
       "version": "1.1.0",

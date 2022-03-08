@@ -2,6 +2,57 @@
   "name": "@griffel/babel-preset",
   "entries": [
     {
+      "date": "Mon, 07 Mar 2022 16:55:43 GMT",
+      "tag": "@griffel/babel-preset_v2.0.1",
+      "version": "2.0.1",
+      "comments": {
+        "patch": [
+          {
+            "author": "olfedias@microsoft.com",
+            "package": "@griffel/babel-preset",
+            "commit": "5cae8e7714ae23d7f8ff6a6989dccf3e77a4ae0e",
+            "comment": "test: add test for typings based with different TS versions (#57)"
+          },
+          {
+            "author": "beachball",
+            "package": "@griffel/babel-preset",
+            "comment": "Bump @griffel/core to v2.0.1",
+            "commit": "c786dcd6394195011eaad035f09b89f55ad01346"
+          }
+        ]
+      }
+    },
+    {
+      "date": "Mon, 07 Mar 2022 16:27:42 GMT",
+      "tag": "@griffel/babel-preset_v2.0.0",
+      "version": "2.0.0",
+      "comments": {
+        "major": [
+          {
+            "author": "beachball",
+            "package": "@griffel/babel-preset",
+            "comment": "Bump @griffel/core to v2.0.0",
+            "commit": "03db6b7fe2a0c35adb70c87a1d4e0d16cced8e12"
+          }
+        ]
+      }
+    },
+    {
+      "date": "Mon, 07 Mar 2022 12:26:37 GMT",
+      "tag": "@griffel/babel-preset_v1.1.5",
+      "version": "1.1.5",
+      "comments": {
+        "patch": [
+          {
+            "author": "olfedias@microsoft.com",
+            "package": "@griffel/babel-preset",
+            "commit": "5cae8e7714ae23d7f8ff6a6989dccf3e77a4ae0e",
+            "comment": "test: add test for typings based with different TS versions (#57)"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 07 Mar 2022 09:08:07 GMT",
       "tag": "@griffel/babel-preset_v1.1.0",
       "version": "1.1.0",
