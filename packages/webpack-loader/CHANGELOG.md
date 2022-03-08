@@ -1,8 +1,19 @@
 # Change Log - @griffel/webpack-loader
 
-This log was last generated on Mon, 07 Mar 2022 16:55:43 GMT and should not be manually modified.
+This log was last generated on Tue, 08 Mar 2022 14:20:13 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.0.2
+
+Tue, 08 Mar 2022 14:20:13 GMT
+
+### Patches
+
+- fix: add missing dependency on Webpack loader (olfedias@microsoft.com)
+- chore: add dependencies explicitly to package.json (olfedias@microsoft.com)
+- Bump @griffel/babel-preset to v1.1.1
+- Bump @griffel/react to v1.0.2
 
 ## 3.0.1
 
