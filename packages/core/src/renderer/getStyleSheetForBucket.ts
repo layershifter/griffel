@@ -26,41 +26,100 @@ export const styleBucketOrdering: StyleBucketName[] = [
   'k',
   // at-rules
   't',
+  // media queries
+  'm',
+  // media queries with support rules
+  's',
 ];
 
-/**
- * Lazily adds a `<style>` bucket to the `<head>`. This will ensure that the style buckets are ordered.
- */
-export function getStyleSheetForBucket(
-  bucketName: StyleBucketName,
-  target: Document,
-  renderer: GriffelRenderer,
-  elementAttributes: Record<string, string> = {},
-): CSSStyleSheet {
-  if (!renderer.styleElements[bucketName]) {
-    let currentBucketIndex = styleBucketOrdering.indexOf(bucketName) + 1;
-    let nextBucketFromCache = null;
+type StyleSheetParams = {
+  bucketName: StyleBucketName;
+  media?: string;
+};
 
-    // Find the next bucket which we will add our new style bucket before.
-    for (; currentBucketIndex < styleBucketOrdering.length; currentBucketIndex++) {
-      const nextBucket = renderer.styleElements[styleBucketOrdering[currentBucketIndex]];
-      if (nextBucket) {
-        nextBucketFromCache = nextBucket;
+//
+// d .foo { color: red }
+// t @supports () .foo { color: red } // bucketName: t
+// m @media (1px) .foo { color: red } // bucketName: m.1px
+// m @media (2px) .foo { color: red } // bucketName: m.2px
+// s @supports && @media (1px) .foo { color: red } // bucketName: s.1px
+// s @supports && @media (2px) .foo { color: red } // bucketName: s.2px
+//
+//
+
+export function getStyleElementSibling(
+  styleElements: HTMLStyleElement[],
+  compareMediaQuery: (a: string, b: string) => number,
+  referenceParams: StyleSheetParams,
+) {
+  const { bucketName: targetBucketName, media } = referenceParams;
+  const targetBucketIndex = styleBucketOrdering.indexOf(targetBucketName);
+
+  let nextBucket = null;
+  let currentIndex = 0;
+
+  for (; currentIndex < styleElements.length; currentIndex++) {
+    const styleElement = styleElements[currentIndex];
+
+    const currentBucketName = styleElement.dataset['makeStylesBucket'] as StyleBucketName;
+    const currentBucketIndex = styleBucketOrdering.indexOf(currentBucketName);
+
+    if (currentBucketIndex >= targetBucketIndex) {
+      nextBucket = styleElement;
+      break;
+    }
+  }
+
+  if (targetBucketName === 'm') {
+    for (; currentIndex < styleElements.length; currentIndex++) {
+      const styleElement = styleElements[currentIndex];
+
+      const currentBucketName = styleElement.dataset['makeStylesBucket'] as StyleBucketName;
+      const currentBucketMedia = styleElement.dataset['makeStylesMedia'] as string;
+
+      if (currentBucketName !== 'm' || compareMediaQuery(currentBucketMedia, media!) > 1) {
+        nextBucket = styleElement;
         break;
       }
     }
+  }
 
+  return nextBucket;
+}
+
+export function getStylesheetFromCache(
+  target: Document | undefined,
+  renderer: GriffelRenderer,
+  elementAttributes: Record<string, string> = {},
+  referenceParams: StyleSheetParams,
+  compareMediaQuery: (a: string, b: string) => number,
+): CSSStyleSheet | undefined {
+  const { bucketName, media } = referenceParams;
+  const reference = bucketName + (media || '');
+
+  if (!target) {
+    return undefined;
+  }
+
+  if (!renderer.styleElements[reference]) {
     const tag = target.createElement('style');
-
     tag.dataset['makeStylesBucket'] = bucketName;
 
     for (const attribute in elementAttributes) {
       tag.setAttribute(attribute, elementAttributes[attribute]);
     }
 
-    renderer.styleElements[bucketName] = tag;
-    target.head.insertBefore(tag, nextBucketFromCache);
+    const tags = target.head.querySelectorAll<HTMLStyleElement>('[data-make-styles-bucket]');
+    const sibling = getStyleElementSibling(Array.from(tags), compareMediaQuery, referenceParams);
+
+    if (sibling) {
+      target.head.insertBefore(tag, sibling);
+    } else {
+      target.head.appendChild(tag);
+    }
+
+    renderer.styleElements[reference] = tag;
   }
 
-  return renderer.styleElements[bucketName]!.sheet as CSSStyleSheet;
+  return renderer.styleElements[reference].sheet;
 }

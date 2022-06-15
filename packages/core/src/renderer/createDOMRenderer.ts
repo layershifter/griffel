@@ -1,7 +1,6 @@
 import { injectDevTools, isDevToolsEnabled, debugData } from '../devtools';
 import { GriffelRenderer, StyleBucketName } from '../types';
-import { getStyleSheetForBucket } from './getStyleSheetForBucket';
-import { getStyleSheetForMedia } from './getStyleSheetForMedia';
+import { getStylesheetFromCache } from './getStyleSheetForBucket';
 
 let lastIndex = 0;
 
@@ -13,7 +12,7 @@ export interface CreateDOMRendererOptions {
    */
   styleElementAttributes?: Record<string, string>;
 
-  compareMediaQuery?: (a: string, b: string) => number;
+  compareMediaQuery?: (mediaQueryA: string, mediaQueryB: string) => number;
 
   /**
    * A filter run before CSS rule insertion to systematically remove CSS rules at render time.
@@ -24,6 +23,50 @@ export interface CreateDOMRendererOptions {
    * ⚠️ This API is unstable and can be removed from the library at any time.
    */
   unstable_filterCSSRule?: (cssRule: string) => boolean;
+}
+
+function safeInsertRule(sheet: CSSStyleSheet | undefined, ruleCSS: string) {
+  if (sheet) {
+    try {
+      sheet.insertRule(ruleCSS, sheet.cssRules.length);
+    } catch (e) {
+      // We've disabled these warnings due to false-positive errors with browser prefixes
+      if (process.env.NODE_ENV !== 'production' && !ignoreSuffixesRegex.test(ruleCSS)) {
+        // eslint-disable-next-line no-console
+        console.error(`There was a problem inserting the following rule: "${ruleCSS}"`, e);
+      }
+    }
+  }
+}
+
+function insertCSSRulesToDOM(
+  renderer: GriffelRenderer,
+  sheet: CSSStyleSheet | undefined,
+  cssRules: string[],
+  sheetName: string,
+  unstable_filterCSSRule: CreateDOMRendererOptions['unstable_filterCSSRule'],
+) {
+  for (let i = 0, l = cssRules.length; i < l; i++) {
+    const ruleCSS = cssRules[i];
+
+    if (renderer.insertionCache[ruleCSS]) {
+      continue;
+    }
+
+    renderer.insertionCache[ruleCSS] = sheetName;
+
+    if (process.env.NODE_ENV !== 'production' && isDevToolsEnabled) {
+      debugData.addCSSRule(ruleCSS);
+    }
+
+    if (unstable_filterCSSRule) {
+      if (unstable_filterCSSRule(ruleCSS)) {
+        safeInsertRule(sheet, ruleCSS);
+      }
+    } else {
+      safeInsertRule(sheet, ruleCSS);
+    }
+  }
 }
 
 /**
@@ -39,43 +82,8 @@ export function createDOMRenderer(
   const renderer: GriffelRenderer = {
     insertionCache: {},
     styleElements: {},
-    mediaElements: {},
-    compareMediaQuery,
 
     id: `d${lastIndex++}`,
-
-    insertCSSRulesToDOM(cssRules: string[], styleBucketName: string, sheet: CSSStyleSheet | undefined) {
-      for (let i = 0, l = cssRules.length; i < l; i++) {
-        const ruleCSS = cssRules[i];
-
-        if (renderer.insertionCache[ruleCSS]) {
-          continue;
-        }
-
-        renderer.insertionCache[ruleCSS] = styleBucketName as StyleBucketName;
-        if (process.env.NODE_ENV !== 'production' && isDevToolsEnabled) {
-          debugData.addCSSRule(ruleCSS);
-        }
-
-        if (sheet) {
-          try {
-            if (unstable_filterCSSRule) {
-              if (unstable_filterCSSRule(ruleCSS)) {
-                sheet.insertRule(ruleCSS, sheet.cssRules.length);
-              }
-            } else {
-              sheet.insertRule(ruleCSS, sheet.cssRules.length);
-            }
-          } catch (e) {
-            // We've disabled these warnings due to false-positive errors with browser prefixes
-            if (process.env.NODE_ENV !== 'production' && !ignoreSuffixesRegex.test(ruleCSS)) {
-              // eslint-disable-next-line no-console
-              console.error(`There was a problem inserting the following rule: "${ruleCSS}"`, e);
-            }
-          }
-        }
-      }
-    },
 
     insertCSSRules(cssRulesByBucket) {
       // eslint-disable-next-line guard-for-in
@@ -83,22 +91,15 @@ export function createDOMRenderer(
         const styleBucketName = bucketName as StyleBucketName;
         const cssRulesForBucket = cssRulesByBucket[styleBucketName]!;
 
-        if (styleBucketName === 'm') {
-          for (const mediaQuery in cssRulesByBucket['m']) {
-            const sheet = target && getStyleSheetForMedia(mediaQuery, target, renderer, options.styleElementAttributes);
-            renderer.insertCSSRulesToDOM(cssRulesByBucket['m'][mediaQuery], mediaQuery, sheet);
-          }
-        } else {
-          const sheet =
-            target &&
-            getStyleSheetForBucket(
-              styleBucketName as StyleBucketName,
-              target,
-              renderer,
-              options.styleElementAttributes,
-            );
-          renderer.insertCSSRulesToDOM(cssRulesForBucket as string[], styleBucketName, sheet);
-        }
+        const sheet = getStylesheetFromCache(
+          target,
+          renderer,
+          options.styleElementAttributes,
+          { bucketName: bucketName as StyleBucketName },
+          compareMediaQuery,
+        );
+
+        insertCSSRulesToDOM(renderer, sheet, cssRulesForBucket as string[], styleBucketName, unstable_filterCSSRule);
       }
     },
   };

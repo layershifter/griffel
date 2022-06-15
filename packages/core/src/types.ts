@@ -91,7 +91,7 @@ export interface GriffelRenderer {
   /**
    * @private
    */
-  insertionCache: Record<string, StyleBucketName>;
+  insertionCache: Record<string, string>;
 
   /**
    * @private
@@ -101,22 +101,7 @@ export interface GriffelRenderer {
   /**
    * @private
    */
-  mediaElements: Partial<Record<string, HTMLStyleElement>>;
-
-  /**
-   * @private
-   */
   insertCSSRules(cssRules: CSSRulesByBucket): void;
-
-  /**
-   * @private
-   */
-  compareMediaQuery(a: string, b: string): number;
-
-  /**
-   * @private
-   */
-  insertCSSRulesToDOM(cssRules: string[], styleBucketName: string, sheet: CSSStyleSheet | undefined): void;
 }
 
 export type SequenceHash = string;
@@ -151,6 +136,7 @@ export type CSSRulesByBucket = {
   m?: Record<string, string[]>;
   //  at-rules (@support, @layer)
   t?: string[];
+  s?: Array<[string /* cssRule */, string /* media query */]>;
 };
 
 export type StylesBySlots<Slots extends string | number> = Record<Slots, GriffelStyle>;
