@@ -2,8 +2,13 @@ import { NodePath, PluginObj, PluginPass, types as t } from '@babel/core';
 import { addNamed } from '@babel/helper-module-imports';
 import { declare } from '@babel/helper-plugin-utils';
 import type { CSSRulesByBucket } from '@griffel/core';
+import * as path from 'path';
+import { options } from 'yargs';
 
 type StripRuntimeBabelPluginOptions = {
+  /** A directory that contains fake .css file used for CSS extraction */
+  resourceDirectory?: string;
+
   unstable_keepOriginalCode?: boolean;
 };
 
@@ -16,6 +21,18 @@ type StripRuntimeBabelPluginState = PluginPass & {
 export type StripRuntimeBabelPluginMetadata = {
   cssRulesByBucket?: CSSRulesByBucket;
 };
+
+export function transformUrl(filename: string, resourceDirectory: string, assetPath: string) {
+  // Get the absolute path to the asset from the path relative to the JS file
+  const absoluteAssetPath = path.resolve(path.dirname(filename), assetPath);
+
+  // Replace asset path with new path relative to the output CSS
+  const relativeAssetPath = path.relative(resourceDirectory, absoluteAssetPath);
+
+  // Normalize paths to be POSIX-like as bundlers don't handle Windows paths
+  // "path.posix" does not make sense there as there is no "windows-to-posix-path" function
+  return relativeAssetPath.split(path.sep).join(path.posix.sep);
+}
 
 function concatCSSRulesByBucket(bucketA: CSSRulesByBucket = {}, bucketB: CSSRulesByBucket) {
   Object.entries(bucketB).forEach(([cssBucketName, cssBucketEntries]) => {
@@ -101,7 +118,11 @@ function getReferencePaths(
   return [];
 }
 
-function inlineAssetImports(argumentPath: NodePath<t.ObjectExpression> | NodePath<t.ArrayExpression>) {
+function inlineAssetImports(
+  argumentPath: NodePath<t.ObjectExpression> | NodePath<t.ArrayExpression>,
+  filename: string,
+  resourceDirectory: string,
+) {
   argumentPath.traverse({
     TemplateLiteral(literalPath) {
       const expressionPaths = literalPath.get('expressions');
@@ -141,7 +162,13 @@ function inlineAssetImports(argumentPath: NodePath<t.ObjectExpression> | NodePat
           );
         }
 
-        expressionPath.replaceWith(t.stringLiteral(importDeclarationPath.get('source').node.value));
+        expressionPath.replaceWith(
+          t.stringLiteral(
+            // When imports are inlined, we need to adjust the relative paths inside url(..) expressions
+            // to allow css-loader resolve an imported asset properly
+            transformUrl(filename, resourceDirectory, importDeclarationPath.get('source').node.value),
+          ),
+        );
         importDeclarationPath.remove();
       });
     },
@@ -159,6 +186,7 @@ function updateReferences(
   importSpecifierPath: NodePath<t.ImportSpecifier>,
   importSource: string,
   functionKind: FunctionKinds,
+  resourceDirectory: string,
   unstable_keepOriginalCode?: boolean,
 ) {
   const importName = functionKind === '__styles' ? '__css' : '__resetCSS';
@@ -174,7 +202,7 @@ function updateReferences(
       const argumentPath = getFunctionArgumentPath(callExpressionPath, functionKind);
 
       if (argumentPath) {
-        inlineAssetImports(argumentPath);
+        inlineAssetImports(argumentPath, state.filename!, resourceDirectory);
         evaluateAndUpdateArgument(argumentPath, functionKind, state, unstable_keepOriginalCode);
 
         if (importIdentifier) {
@@ -200,6 +228,17 @@ export const babelPluginStripGriffelRuntime = declare<
     visitor: {
       Program: {
         enter(path, state) {
+          if (typeof options.resourceDirectory === 'undefined') {
+            throw new Error(
+              [
+                '@griffel/webpack-extraction-plugin: This plugin requires "resourceDirectory" option to be specified. ',
+                "It's automatically done by our loaders. ",
+                "If you're facing this issue, please check your setup.\n\n",
+                'See: https://babeljs.io/docs/en/options#filename',
+              ].join(''),
+            );
+          }
+
           if (typeof state.filename === 'undefined') {
             throw new Error(
               [
@@ -221,9 +260,23 @@ export const babelPluginStripGriffelRuntime = declare<
               const importSource = importSourcePath.node.value;
 
               if (importedPath.isIdentifier({ name: '__styles' })) {
-                updateReferences(state, path, importSource, '__styles', options.unstable_keepOriginalCode);
+                updateReferences(
+                  state,
+                  path,
+                  importSource,
+                  '__styles',
+                  options.resourceDirectory!,
+                  options.unstable_keepOriginalCode,
+                );
               } else if (importedPath.isIdentifier({ name: '__resetStyles' })) {
-                updateReferences(state, path, importSource, '__resetStyles', options.unstable_keepOriginalCode);
+                updateReferences(
+                  state,
+                  path,
+                  importSource,
+                  '__resetStyles',
+                  options.resourceDirectory!,
+                  options.unstable_keepOriginalCode,
+                );
               }
             },
           });

@@ -13,7 +13,10 @@ export type WebpackLoaderOptions = {
 
 type WebpackLoaderParams = Parameters<webpack.LoaderDefinitionFunction<WebpackLoaderOptions>>;
 
-const virtualLoaderPath = path.resolve(__dirname, '..', 'virtual-loader', 'index.js');
+const resourceDirectory = path.resolve(__dirname, '..', 'virtual-loader');
+
+const virtualLoaderPath = path.resolve(resourceDirectory, 'index.js');
+const resourcePath = path.resolve(resourceDirectory, 'griffel.css');
 
 function toURIComponent(rule: string): string {
   return encodeURIComponent(rule).replace(/!/g, '%21');
@@ -59,6 +62,7 @@ function webpackLoader(
   try {
     result = transformSync(sourceCode, {
       filename: path.relative(process.cwd(), this.resourcePath),
+      resourceDirectory,
 
       enableSourceMaps: this.sourceMap || false,
       inputSourceMap: parseSourceMap(inputSourceMap),
@@ -99,19 +103,14 @@ function webpackLoader(
         );
       }, '');
 
-      const outputFileName = this.resourcePath.replace(/\.[^.]+$/, '.griffel.css');
+      const request = `import ${JSON.stringify(
+        this.utils.contextify(
+          this.context || this.rootContext,
+          `griffel.css!=!${virtualLoaderPath}!${resourcePath}?style=${toURIComponent(css)}`,
+        ),
+      )};`;
 
-      const request = `${outputFileName}!=!${virtualLoaderPath}?style=${toURIComponent(css)}!${this.resourcePath}`;
-      const stringifiedRequest = JSON.stringify(this.utils.contextify(this.context || this.rootContext, request));
-
-      this.callback(
-        null,
-        // Heads up!
-        // This is probably a bug, but "import" does not work properly there: files from node_modules are processed, but
-        // they will not be present in chunks 😳
-        `${result.code}\n\nrequire(${stringifiedRequest});`,
-        result.sourceMap,
-      );
+      this.callback(null, `${result.code}\n\n${request};`, result.sourceMap);
       return;
     }
 

@@ -1,11 +1,14 @@
+const { URLSearchParams } = require('url');
+
 /**
- * @this {import('webpack').LoaderContext<{ style?: string }>}
+ * @this {import('webpack').LoaderContext<unknown>}
  * @return {String}
  */
 function virtualLoader() {
-  const { style = '' } = this.getOptions();
+  const query = new URLSearchParams(this.resourceQuery);
+  const styleRule = query.get('style');
 
-  return style;
+  return styleRule ?? '';
 }
 
 module.exports = virtualLoader;

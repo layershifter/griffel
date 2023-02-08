@@ -5,6 +5,7 @@ import { babelPluginStripGriffelRuntime, StripRuntimeBabelPluginMetadata } from 
 
 export type TransformOptions = {
   filename: string;
+  resourceDirectory: string;
 
   inputSourceMap: Babel.TransformOptions['inputSourceMap'];
   enableSourceMaps: boolean;
@@ -40,7 +41,15 @@ export function transformSync(sourceCode: string, options: TransformOptions): Tr
     // Ignore all user's configs and apply only our plugin
     babelrc: false,
     configFile: false,
-    plugins: [[babelPluginStripGriffelRuntime, { unstable_keepOriginalCode: options.unstable_keepOriginalCode }]],
+    plugins: [
+      [
+        babelPluginStripGriffelRuntime,
+        {
+          resourceDirectory: options.resourceDirectory,
+          unstable_keepOriginalCode: options.unstable_keepOriginalCode,
+        },
+      ],
+    ],
 
     filename: options.filename,
 

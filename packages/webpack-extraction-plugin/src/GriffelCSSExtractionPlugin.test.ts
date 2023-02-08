@@ -30,13 +30,15 @@ async function compileSourceWithWebpack(
     context: __dirname,
     entry: entryPath,
 
-    mode: 'development',
+    mode: 'production',
+    devtool: false,
 
     output: {
       path: path.resolve(__dirname),
       filename: 'bundle.js',
       pathinfo: false,
       assetModuleFilename: '[name][ext]',
+      chunkFilename: '[name].bundle.js',
     },
     externals: {
       '@griffel/react': 'Griffel',
@@ -69,6 +71,9 @@ async function compileSourceWithWebpack(
       }),
     ],
 
+    optimization: {
+      minimizer: [],
+    },
     resolve: {
       extensions: ['.js', '.ts'],
     },

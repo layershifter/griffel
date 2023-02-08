@@ -2,9 +2,9 @@ import { __styles } from '@griffel/react';
 
 export default __styles(
   {
-    root: { sj55zd: 'fe3e8s9' },
+    root: { De3pzq: 'fcnqdeg' },
   },
   {
-    d: ['.fe3e8s9{color:red;}'],
+    d: ['.fcnqdeg{background-color:green;}'],
   },
 );
