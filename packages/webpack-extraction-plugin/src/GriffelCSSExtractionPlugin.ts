@@ -207,16 +207,16 @@ export class GriffelCSSExtractionPlugin {
         },
         assets => {
           if (this.enableCssChunksWithLayers) {
+            const cssAssets = Object.entries(assets).filter(([assetName]) => assetName.endsWith('.css'));
+
             const allMediaEntries: string[] = [];
+            const cssAssetsEntries: Array<{ assetName: string; css: string; remainingCSS: string }> = [];
 
-            Object.entries(assets).forEach(([assetName, assetSource]) => {
-              if (!assetName.endsWith('.css')) {
-                return;
-              }
-
+            cssAssets.forEach(([assetName, assetSource]) => {
               const cssContent = getAssetSourceContents(assetSource);
-              // TODO: Check that content has Griffel CSS
               const { cssRulesByBucket, remainingCSS } = parseCSSRules(cssContent);
+
+              // TODO: Check that content has Griffel CSS
 
               const { css, mediaEntries } = sortCSSRules([cssRulesByBucket], {
                 compareMediaQueries: this.compareMediaQueries,
@@ -224,36 +224,27 @@ export class GriffelCSSExtractionPlugin {
               });
 
               allMediaEntries.push(...mediaEntries);
-              compilation.updateAsset(assetName, new compiler.webpack.sources.RawSource(remainingCSS + css));
+              cssAssetsEntries.push({ assetName, css, remainingCSS });
             });
 
-            const entryPoints = Array.from(compilation.entrypoints.values());
-            const mainEntryPointFiles = entryPoints[0].getFiles();
-            const mainCSSFile = mainEntryPointFiles.find(file => file.endsWith('.css'));
+            const mediaOrderInsertion = styleBucketOrdering.findIndex(bucket => bucket === 'm');
+            const layerOrder: string[] = [
+              ...styleBucketOrdering.slice(0, mediaOrderInsertion),
+              ...Array.from(new Set(allMediaEntries))
+                .sort((mediaA, mediaB) => {
+                  return this.compareMediaQueries(mediaA, mediaB);
+                })
+                .map(media => 'm' + hash(media)),
+              ...styleBucketOrdering.slice(mediaOrderInsertion + 1),
+            ];
+            const layerCSS = `@layer ${layerOrder.join(',')};`;
 
-            // TODO - is it possible the main entrypoint has no css asset?
-            if (mainCSSFile) {
-              const content = getAssetSourceContents(assets[mainCSSFile]);
-
-              const mediaOrderInsertion = styleBucketOrdering.findIndex(bucket => bucket === 'm');
-              const layerOrder: string[] = [
-                ...styleBucketOrdering.slice(0, mediaOrderInsertion),
-                ...Array.from(new Set(allMediaEntries))
-                  .sort((mediaA, mediaB) => {
-                    return this.compareMediaQueries(mediaA, mediaB);
-                  })
-                  .map(media => 'm' + hash(media)),
-                ...styleBucketOrdering.slice(mediaOrderInsertion),
-              ];
-
-              if (mainEntryPointFiles) {
-                compilation.updateAsset(
-                  mainCSSFile,
-                  new compiler.webpack.sources.RawSource(`@layer ${layerOrder.join(',')};  ${content}`),
-                );
-              }
-            }
-
+            cssAssetsEntries.forEach(({ assetName, css, remainingCSS }) => {
+              compilation.updateAsset(
+                assetName,
+                new compiler.webpack.sources.RawSource(`${layerCSS}\n ${css} ${remainingCSS}`),
+              );
+            });
             return;
           }
 

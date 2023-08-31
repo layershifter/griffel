@@ -1,5 +1,15 @@
 /** bundle.css **/
-@layer r,d,l,v,w,f,i,h,a,s,k,t,myvhjxr,m11rdin7,mc2s5x3,m,c;
+@layer r,d,l,v,w,f,i,h,a,s,k,t,myvhjxr,m11rdin7,mc2s5x3,c;
+@layer r {
+  .rjefjbm {
+    color: red;
+    padding-left: 4px;
+  }
+  .r7z97ji {
+    color: red;
+    padding-right: 4px;
+  }
+}
 @layer m11rdin7 {
   @media (min-width: 1px) {
     .fcnqdeg {
@@ -15,6 +25,7 @@
   }
 }
 /** chunkA.css **/
+@layer r,d,l,v,w,f,i,h,a,s,k,t,myvhjxr,m11rdin7,mc2s5x3,c;
 @layer mc2s5x3 {
   @media (min-width: 3px) {
     .fe3e8s9 {
@@ -30,6 +41,7 @@
   }
 }
 /** chunkB.css **/
+@layer r,d,l,v,w,f,i,h,a,s,k,t,myvhjxr,m11rdin7,mc2s5x3,c;
 @layer myvhjxr {
   @media (min-width: 2px) {
     .fe3e8s9 {
