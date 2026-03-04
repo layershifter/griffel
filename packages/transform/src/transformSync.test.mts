@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import { format } from 'prettier';
 import { describe, it, expect, vi } from 'vitest';
 
+import { ASSET_TAG_OPEN, ASSET_TAG_CLOSE } from './constants.mjs';
 import { transformSync, type TransformOptions } from './transformSync.mjs';
 
 type TestCase = {
@@ -22,6 +23,82 @@ const prettierConfig = JSON.parse(
   fs.readFileSync(path.resolve(__dirname, '../../../.prettierrc'), { encoding: 'utf-8' }),
 );
 const fixturesDir = path.join(__dirname, '..', '__fixtures__');
+
+/**
+ * Normalizes asset fixture outputs to be machine-independent.
+ * Asset paths in `<griffel-asset>` tags contain absolute paths that differ per machine,
+ * which also causes CSS class name hashes to differ. This function:
+ * 1. Replaces absolute paths in asset tags with paths relative to the fixture directory
+ * 2. Replaces Griffel-generated class name hashes with deterministic ordered placeholders
+ *
+ * Only applies when the meta output contains asset tags; non-asset fixtures pass through unchanged.
+ */
+function normalizeAssetFixtureOutput(
+  code: string,
+  meta: string,
+  fixtureDir: string,
+): { code: string; meta: string } {
+  if (meta.indexOf(ASSET_TAG_OPEN) === -1) {
+    return { code, meta };
+  }
+
+  function normalizeTags(str: string): string {
+    let result = '';
+    let searchFrom = 0;
+
+    while (searchFrom < str.length) {
+      const openIdx = str.indexOf(ASSET_TAG_OPEN, searchFrom);
+
+      if (openIdx === -1) {
+        result += str.slice(searchFrom);
+        break;
+      }
+
+      result += str.slice(searchFrom, openIdx + ASSET_TAG_OPEN.length);
+
+      const contentStart = openIdx + ASSET_TAG_OPEN.length;
+      const closeIdx = str.indexOf(ASSET_TAG_CLOSE, contentStart);
+
+      if (closeIdx === -1) {
+        result += str.slice(contentStart);
+        break;
+      }
+
+      const absPath = str.slice(contentStart, closeIdx);
+      result += path.relative(fixtureDir, absPath);
+
+      searchFrom = closeIdx;
+    }
+
+    return result;
+  }
+
+  let normalizedMeta = normalizeTags(meta);
+  let normalizedCode = normalizeTags(code);
+
+  // Collect Griffel-generated CSS class name hashes from selectors in the meta JSON
+  const hashRegex = /\.([fr][a-z0-9]{4,})(?=[{:])/g;
+  const hashes: string[] = [];
+  let match;
+
+  while ((match = hashRegex.exec(normalizedMeta)) !== null) {
+    if (!hashes.includes(match[1])) {
+      hashes.push(match[1]);
+    }
+  }
+
+  // Replace each hash with a deterministic ordered placeholder
+  for (let i = 0; i < hashes.length; i++) {
+    const hash = hashes[i];
+    const prefix = hash[0];
+    const placeholder = `${prefix}___${i}`;
+
+    normalizedCode = normalizedCode.split(hash).join(placeholder);
+    normalizedMeta = normalizedMeta.split(hash).join(placeholder);
+  }
+
+  return { code: normalizedCode, meta: normalizedMeta };
+}
 
 const TESTS: TestCase[] = [
   // 🎩 Tip: use "only: true" to run a single test
@@ -331,11 +408,21 @@ export const useStyles = makeStyles({
         filename: testCase.fixture,
         ...transformOptions,
       });
-      const outputCode = format(code, { ...prettierConfig, parser: 'typescript' });
-      const outputMeta = format(JSON.stringify({ usedProcessing, usedVMForEvaluation, cssRulesByBucket }, null, 2), {
-        ...prettierConfig,
-        parser: 'json',
-      });
+      const rawOutputCode = await format(code, { ...prettierConfig, parser: 'typescript' });
+      const rawOutputMeta = await format(
+        JSON.stringify({ usedProcessing, usedVMForEvaluation, cssRulesByBucket }, null, 2),
+        {
+          ...prettierConfig,
+          parser: 'json',
+        },
+      );
+
+      const fixtureDir = path.dirname(testCase.fixture);
+      const { code: outputCode, meta: outputMeta } = normalizeAssetFixtureOutput(
+        rawOutputCode,
+        rawOutputMeta,
+        fixtureDir,
+      );
 
       await expect(outputCode).toMatchFileSnapshot(testCase.outputFixture!);
       await expect(outputMeta).toMatchFileSnapshot(testCase.outputFixture!.replace(/\.ts$/, '.meta.json'));
