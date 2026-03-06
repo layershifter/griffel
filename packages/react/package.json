@@ -17,9 +17,9 @@
     ".": {
       "@griffel/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.cjs.js",
-      "default": "./dist/index.esm.js"
+      "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/index.js"
     }
   },
   "wyw-in-js": {

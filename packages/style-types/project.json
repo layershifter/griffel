@@ -4,6 +4,16 @@
   "sourceRoot": "packages/style-types/src",
   "tags": [],
   "targets": {
+    "build": {
+      "dependsOn": ["^build"],
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "options": {
+        "cwd": "{projectRoot}",
+        "commands": ["tsc -b tsconfig.lib.json --pretty", "tsc -p tsconfig.lib.cjs.json --pretty"],
+        "parallel": false
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"]
